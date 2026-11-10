@@ -23,7 +23,7 @@ body {
   color: var(--color-text);
 }
 
-button 
+button, 
 input {
   font: inherit;
   
