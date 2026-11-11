@@ -1,10 +1,19 @@
 import { useState } from 'react'
 import './App.css';
 
+const sound = [
+  {id: "kick", name : "Kick"},
+  {id: "snare", name : "Snare"},
+  {id: "hihat", name : "Hi-Hat"},
+  {id: "clap", name : "Clap"},
+  {id: "808", name : "808 Bass"},
+  {id: "pinano", name : "Piano"},
+];
 function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [ tempo, setTempo] = useState(120);
   const[volume, setVolume] = useState(75);
+
 
 
   function togglePlayback() {
@@ -51,6 +60,17 @@ function App() {
       <p role="status">
         {isPlaying ? 'Playback is on.' : 'Playback is off.'}
       </p>
+      <div className="sound-buttons">
+        {sound.map((sound) => (
+          <button 
+          key={sound.id} 
+          type="button" 
+          className="sound-button"
+          >
+            {sound.name}
+          </button>
+        ))}
+      </div>
     </main>
   )
 }
