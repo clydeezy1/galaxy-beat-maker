@@ -28,3 +28,41 @@ button {
 button:hover {
   background-color: var(--color-playing);
 }
+
+.play-button[aria-pressed="true"] {
+  background-color: var(--color-playing);
+}
+
+.tempo-control {
+  margin-top: 24px;
+  padding: 16px;
+  background-color: var(--color-panel);
+  border-radius: var(--radius-control);
+}
+
+.tempo-control label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.tempo-control input {
+  width: 100%;
+  accent-color: var(--color-primary);
+}
+
+.volume-control {
+  margin-top: 24px;
+  padding: 16px;
+  background-color: var(--color-panel);
+  border-radius: var(--radius-control);
+}
+
+.volume-control label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.volume-control input {
+  width: 100%;
+  accent-color: var(--color-primary);
+}

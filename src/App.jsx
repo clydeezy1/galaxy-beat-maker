@@ -3,6 +3,9 @@ import './App.css';
 
 function App() {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [ tempo, setTempo] = useState(120);
+  const[volume, setVolume] = useState(75);
+
 
   function togglePlayback() {
     setIsPlaying(previous => !previous);
@@ -12,6 +15,30 @@ function App() {
     <main>
       <h1>Galaxy Beat Maker</h1>
       <p>Create your own beats among the stars.</p>
+      <div className="tempo-control">
+        <label htmlFor="tempo">Tempo: {tempo} BPM</label>
+        <input
+          id="tempo"
+          type="range"
+          min="40"
+          max="240"
+          step="1"
+          value={tempo}
+          onChange={event => setTempo(Number(event.target.value))}
+        />
+      </div>
+      <div className="volume-control">
+        <label htmlFor="volume">Master Volume: {volume}%</label>
+        <input
+          id="volume"
+          type="range"
+          min="0"
+          max="100"
+          step="1"
+          value={volume}
+          onChange={event => setVolume(Number(event.target.value))}
+        />
+      </div>
 
       <button
       type="button"
