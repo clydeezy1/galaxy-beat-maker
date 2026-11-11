@@ -11,14 +11,16 @@ const sound = [
 ];
 function App() {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [ tempo, setTempo] = useState(120);
-  const[volume, setVolume] = useState(75);
-
-
+  const [tempo, setTempo] = useState(120);
+  const [volume, setVolume] = useState(75);
 
   function togglePlayback() {
     setIsPlaying(previous => !previous);
   }
+
+  function handleSoundClick(sound) {
+    console.log(sound.name);
+}
 
   return (
     <main>
@@ -66,6 +68,7 @@ function App() {
           key={sound.id} 
           type="button" 
           className="sound-button"
+          onClick={() => handleSoundClick(sound)}
           >
             {sound.name}
           </button>
