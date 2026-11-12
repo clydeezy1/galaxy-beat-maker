@@ -84,3 +84,7 @@ cursor: pointer;
 .sound-button:hover {
   opacity: 0.85;
 }
+.sound-button.selected {
+  background-color: var(--color-playing);
+  color: white;
+}

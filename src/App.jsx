@@ -21,10 +21,6 @@ function App() {
 
   function handleSoundClick(sound) {
     console.log(sound.name);
-}
-
-  function handleSoundClick(sound) {
-    console.log(sound.name);
     setSelectedSound(sound.name);
   }
   return (
@@ -67,14 +63,19 @@ function App() {
       <p role="status">
         {isPlaying ? 'Playback is on.' : 'Playback is off.'}
       </p>
-      <p>Selected sound: {selectedSound}</p>
+      <p>Selected sound: {selectedSound || 'None yet'}</p>
       <div className="sound-buttons">
         {sound.map((sound) => (
           <button 
           key={sound.id} 
           type="button" 
-          className="sound-button"
+          className= {
+          selectedSound === sound.name
+          ? 'sound-button selected'
+          : 'sound-button'
+          }
           onClick={() => handleSoundClick(sound)}
+          aria-pressed={selectedSound === sound.name}
           >
             {sound.name}
           </button>
