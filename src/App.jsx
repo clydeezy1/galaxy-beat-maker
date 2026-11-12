@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import './App.css';
+import { searchSounds } from './services/freesound';
+
 
 const sound = [
   {id: "kick", name : "Kick"},
@@ -19,10 +21,29 @@ function App() {
     setIsPlaying(previous => !previous);
   }
 
-  function handleSoundClick(sound) {
-    console.log(sound.name);
+  async function handleSoundClick(sound) {
     setSelectedSound(sound.name);
+    try {
+      const results = await searchSounds(sound.name);
+      console.log('Sounds from Freesound:', results);
+      
+      const firstSound = results[0];
+
+      if (!firstSound) {
+        throw new Error('No matching sound found.');
+      }
+      const audioUrl = firstSound.previews['preview-hq-mp3'];
+      console.log('Audio URL:', audioUrl);
+
+      const audio = new Audio(audioUrl);
+      audio.volume = volume / 100;
+      await audio.play();
+
+    } catch (error) {
+      console.error('Could not load sounds:', error);
+    }
   }
+
   return (
     <main>
       <h1>Galaxy Beat Maker</h1>
