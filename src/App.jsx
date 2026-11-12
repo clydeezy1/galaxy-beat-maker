@@ -13,6 +13,7 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [tempo, setTempo] = useState(120);
   const [volume, setVolume] = useState(75);
+  const [selectedSound, setSelectedSound] = useState('');
 
   function togglePlayback() {
     setIsPlaying(previous => !previous);
@@ -22,6 +23,10 @@ function App() {
     console.log(sound.name);
 }
 
+  function handleSoundClick(sound) {
+    console.log(sound.name);
+    setSelectedSound(sound.name);
+  }
   return (
     <main>
       <h1>Galaxy Beat Maker</h1>
@@ -62,6 +67,7 @@ function App() {
       <p role="status">
         {isPlaying ? 'Playback is on.' : 'Playback is off.'}
       </p>
+      <p>Selected sound: {selectedSound}</p>
       <div className="sound-buttons">
         {sound.map((sound) => (
           <button 
