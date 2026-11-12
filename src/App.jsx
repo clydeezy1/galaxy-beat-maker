@@ -16,6 +16,24 @@ function App() {
   const [tempo, setTempo] = useState(120);
   const [volume, setVolume] = useState(75);
   const [selectedSound, setSelectedSound] = useState('');
+  // MIDI is too hard so i'll just use a sound sequencer instead.
+  const [pattern, setPattern] = useState(()=>
+    Object.fromEntries(
+      sound.map(item => [
+        item.id, 
+        Array(16).fill(false),
+      ])
+    )
+  );
+
+  function toggleStep(soundId, stepIndex) {
+    setPattern(previous=> ({
+      ...previous,
+      [soundId]: previous[soundId].map((ison, index) =>
+        index === stepIndex ? !ison : ison
+      )
+    }));
+  }
 
   function togglePlayback() {
     setIsPlaying(previous => !previous);
@@ -102,6 +120,30 @@ function App() {
           </button>
         ))}
       </div>
+      < section className="sequencer">
+        <h2>Beat Pattern</h2>
+
+        {sound.map(item => (
+          <div className="sequencer-row" key={item.id}>
+            <span>{item.name}</span>
+
+            <div className="sequencer-steps">
+              {pattern[item.id]?.map((isOn, stepIndex) => (
+                <button
+                  key={stepIndex}
+                  type="button"
+                  className={isOn ? 'step-button active' : 'step-button'}
+                  onClick={() => toggleStep(item.id, stepIndex)}
+                  aria-pressed={isOn}
+                  aria-label={`${item.name} step ${stepIndex + 1}`}
+                >
+                  {stepIndex + 1}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </section>
     </main>
   )
 }
