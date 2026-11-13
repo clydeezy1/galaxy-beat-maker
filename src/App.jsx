@@ -44,7 +44,14 @@ function App() {
     try {
       const results = await searchSounds(sound.name);
       console.log('Sounds from Freesound:', results);
-      
+        console.table(
+          results.map(item => ({
+            id: item.id,
+            name: item.name,
+            url: item.url
+          }))
+        );
+
       const firstSound = results[0];
 
       if (!firstSound) {

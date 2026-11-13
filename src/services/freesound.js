@@ -2,7 +2,7 @@ export async function searchSounds(query) {
     const params = new URLSearchParams({
         query,
         fields: 'id,name,previews,username,license,url',
-        page_size: '1',
+        page_size: '5',
         format: 'json',
     });
 
