@@ -153,3 +153,33 @@ box-shadow:
   min-width: 508px; 
   /* Ensure the grid doesn't shrink too much */
 }
+/* Quick presentation polish */
+
+body {
+  background:
+    radial-gradient(
+      circle at 20% 15%,
+      #32265a 0%,
+      transparent 45%
+    ),
+    linear-gradient(135deg, #10111e, #22243a);
+  color: #f5f3ff;
+}
+
+button {
+  transition: transform 0.15s ease,
+              box-shadow 0.15s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 16px rgba(170, 145, 255, 0.25);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+input[type="range"] {
+  accent-color: #b6a0ff;
+}
