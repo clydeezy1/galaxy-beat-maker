@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from "react";
 import './App.css';
 import { searchSounds, getSoundById } from './services/freesound';
 import { loadSoundWithCache } from "./services/soundCache";
@@ -14,6 +14,9 @@ const sound = [
   {id: "piano", name : "Piano"},
 ];
 function App() {
+  const audioBuffersRef = useRef({});
+  const audioContextRef = useRef(null);
+
   const [isPlaying, setIsPlaying] = useState(false);
   // Tracks which sequencer is playing.
   // Tracks the current beat position
@@ -109,6 +112,40 @@ const [activeInstrument, setActiveInstrument] = useState(null);
     }
   }
 
+  async function prepareInstrument(soundId, audioData) {
+  if (!audioContextRef.current) {
+    audioContextRef.current = new AudioContext();
+  }
+
+  const audioBuffer =
+    await audioContextRef.current.decodeAudioData(audioData.slice(0));
+
+  audioBuffersRef.current[soundId] = audioBuffer;
+
+  console.log("Instrument prepared:", soundId);
+}
+
+async function loadSelectedInstrument(soundId, sample) {
+  try {
+    const audioUrl = sample.previews?.["preview-hq-mp3"];
+
+    if (!audioUrl) {
+      throw new Error("No audio preview available");
+    }
+
+    const audioData = await loadSoundWithCache(
+      sample.id,
+      audioUrl
+    );
+
+    await prepareInstrument(soundId, audioData);
+
+    console.log("Ready to play:", soundId);
+  } catch (error) {
+    console.error("Could not prepare instrument:", error);
+  }
+}
+
 function selectSound(sample) {
   if (!activeInstrument) return;
 
@@ -116,6 +153,8 @@ function selectSound(sample) {
     ...previous,
     [activeInstrument]: sample.id
   }));
+
+  loadSelectedInstrument(activeInstrument, sample);
 
   setSearchResults([]);
 
@@ -144,53 +183,27 @@ async function changeSearchPage(newPage) {
   }
 }
 
-async function playInstrument(soundId) {
-  console.log("All saved instrument sounds:", instrumentSounds);
+function playInstrument(soundId) {
+  const audioBuffer = audioBuffersRef.current[soundId];
+  const audioContext = audioContextRef.current;
 
-  const freesoundId = instrumentSounds[soundId];
+  if (!audioBuffer || !audioContext) return;
 
-  console.log("Instrument:", soundId);
-  console.log("SavedFreesound ID:", freesoundId);
-
-
-  if (!freesoundId) return;
-
-  try {
-    const soundData = await getSoundById(freesoundId);
-
-    const audioUrl =
-      soundData.previews["preview-hq-mp3"];
-
-    const audioData = await loadSoundWithCache(
-      freesoundId,
-      audioUrl
-);
-
-    const audioBlob = new Blob([audioData], {
-  type: "audio/mpeg"
-});
-
-const cachedAudioUrl = URL.createObjectURL(audioBlob);
-
-const audio = new Audio(cachedAudioUrl);
-audio.addEventListener("ended", () => {
-  URL.revokeObjectURL(cachedAudioUrl);
-}, { once: true });
-
-audio.addEventListener("error", () => {
-  URL.revokeObjectURL(cachedAudioUrl);
-}, { once: true });
-    audio.volume = volume / 100;
-
-    await audio.play();
-
-    console.log("Audio playback started:", soundId);
-
-  } catch (error) {
-    console.error("Playback failed:", error);
+  if (audioContext.state === "suspended") {
+    audioContext.resume();
   }
-}
 
+  const source = audioContext.createBufferSource();
+  source.buffer = audioBuffer;
+
+  const gainNode = audioContext.createGain();
+  gainNode.gain.value = volume / 100;
+
+  source.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+
+  source.start(0);
+}
   return (
     <main>
       <h1>Galaxy Beat Maker</h1>
