@@ -1,10 +1,11 @@
 // searchSounds alowws me to ask for a list of sound maching the ID
 // searches Freesound for sounds matching the usur's query
-export async function searchSounds(query) {
+export async function searchSounds(query, page = 1) {
     const params = new URLSearchParams({
         query,
         fields: 'id,name,previews,username,license,url',
         page_size: '5',
+        page: String(page),
         format: 'json',
     });
 

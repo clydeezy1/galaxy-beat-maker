@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import './App.css';
 import { searchSounds, getSoundById } from './services/freesound';
+import { loadSoundWithCache } from "./services/soundCache";
+
 
 
 const sound = [
@@ -21,6 +23,9 @@ function App() {
   const [selectedSound, setSelectedSound] = useState('');
   // Stores the chosen Freesound sample for each instrument
 const [instrumentSounds, setInstrumentSounds] = useState({});
+const [searchResults, setSearchResults] = useState([]);
+const [searchPage, setSearchPage] = useState(1);
+const [activeInstrument, setActiveInstrument] = useState(null);
   // MIDI is too hard so i'll just use a sound sequencer instead.
   const [pattern, setPattern] = useState(()=>
     Object.fromEntries(
@@ -83,8 +88,12 @@ const [instrumentSounds, setInstrumentSounds] = useState({});
 
   async function handleSoundClick(sound) {
     setSelectedSound(sound.name);
+    setActiveInstrument(sound.id);
+    setSearchPage(1);
     try {
       const results = await searchSounds(sound.name);
+      setSearchResults(results);
+      setSearchPage(1);
       console.log('Sounds from Freesound:', results);
         console.table(
           results.map(item => ({
@@ -94,28 +103,46 @@ const [instrumentSounds, setInstrumentSounds] = useState({});
           }))
         );
 
-      const firstSound = results[0];
-
-      if (!firstSound) {
-        throw new Error('No matching sound found.');
-      }
- //Saves the slected Freesound sample to its instrument 
-        setInstrumentSounds(previous => ({
-          ...previous,
-          [sound.id]: firstSound.id
-        }));
-
-      const audioUrl = firstSound.previews['preview-hq-mp3'];
-      console.log('Audio URL:', audioUrl);
-
-      const audio = new Audio(audioUrl);
-      audio.volume = volume / 100;
-      await audio.play();
 
     } catch (error) {
       console.error('Could not load sounds:', error);
     }
   }
+
+function selectSound(sample) {
+  if (!activeInstrument) return;
+
+  setInstrumentSounds(previous => ({
+    ...previous,
+    [activeInstrument]: sample.id
+  }));
+
+  setSearchResults([]);
+
+  console.log("Assigned:", sample.name, "to", activeInstrument);
+}
+
+
+async function changeSearchPage(newPage) {
+  if (newPage < 1 || !activeInstrument) return;
+
+  const instrument = sound.find(
+    (item) => item.id === activeInstrument
+  );
+
+  if (!instrument) return;
+
+  try {
+    const results = await searchSounds(instrument.name, newPage);
+
+    if (results.length === 0) return;
+
+    setSearchResults(results);
+    setSearchPage(newPage);
+  } catch (error) {
+    console.error("Could not change search page:", error);
+  }
+}
 
 async function playInstrument(soundId) {
   console.log("All saved instrument sounds:", instrumentSounds);
@@ -134,13 +161,31 @@ async function playInstrument(soundId) {
     const audioUrl =
       soundData.previews["preview-hq-mp3"];
 
-    const audio = new Audio(audioUrl);
+    const audioData = await loadSoundWithCache(
+      freesoundId,
+      audioUrl
+);
+
+    const audioBlob = new Blob([audioData], {
+  type: "audio/mpeg"
+});
+
+const cachedAudioUrl = URL.createObjectURL(audioBlob);
+
+const audio = new Audio(cachedAudioUrl);
+audio.addEventListener("ended", () => {
+  URL.revokeObjectURL(cachedAudioUrl);
+}, { once: true });
+
+audio.addEventListener("error", () => {
+  URL.revokeObjectURL(cachedAudioUrl);
+}, { once: true });
     audio.volume = volume / 100;
 
     await audio.play();
 
     console.log("Audio playback started:", soundId);
-    
+
   } catch (error) {
     console.error("Playback failed:", error);
   }
@@ -204,6 +249,69 @@ async function playInstrument(soundId) {
           </button>
         ))}
       </div>
+
+{searchResults.length > 0 && (
+  <section className="sound-search-results">
+    <h2>Choose a Sound</h2>
+
+    <div className="search-pagination">
+  <button
+    type="button"
+    disabled={searchPage === 1}
+    onClick={() => changeSearchPage(1)}
+  >
+    First
+  </button>
+
+  <button
+    type="button"
+    disabled={searchPage === 1}
+    onClick={() => changeSearchPage(searchPage - 1)}
+  >
+    Previous
+  </button>
+
+  <span>Page {searchPage}</span>
+
+  <button
+    type="button"
+    onClick={() => changeSearchPage(searchPage + 1)}
+  >
+    Next
+  </button>
+</div>
+
+  {searchResults.map((sample) => (
+      <div key={sample.id} className="sound-result">
+        <span>{sample.name}</span>
+
+        <button
+          type="button"
+          onClick={() => {
+            const previewUrl =
+              sample.previews?.["preview-hq-mp3"];
+
+            if (!previewUrl) return;
+
+            const preview = new Audio(previewUrl);
+            preview.volume = volume / 100;
+            preview.play().catch(console.error);
+          }}
+        >
+          Preview
+        </button>
+
+        <button
+          type="button"
+          onClick={() => selectSound(sample)}
+        >
+          Select
+        </button>
+      </div>
+    ))}
+  </section>
+)}
+
       < section className="sequencer">
         <h2>Beat Pattern</h2>
 
