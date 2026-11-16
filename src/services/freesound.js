@@ -1,4 +1,5 @@
 // searchSounds alowws me to ask for a list of sound maching the ID
+// searches Freesound for sounds matching the usur's query
 export async function searchSounds(query) {
     const params = new URLSearchParams({
         query,
@@ -18,10 +19,10 @@ export async function searchSounds(query) {
     
     return data.results;
 }
-// This will allow me to find the specific sound i want using the wnique ID.
+// Retrives one specific sound using its unique Freesound ID
 export async function getSoundById(soundId) {
     const response = await fetch(
-        `/api/freesound/sounds/${soundId}`
+        `/api/freesound/sounds/${soundId}/`
     );
     if (!response.ok) {
         throw new Error(`Sound request failed: ${response.status}`);

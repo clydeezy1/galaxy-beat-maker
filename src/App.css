@@ -84,9 +84,16 @@ cursor: pointer;
 .sound-button:hover {
   opacity: 0.85;
 }
+
+/* Selected instrument button */
 .sound-button.selected {
-  background-color: var(--color-playing);
+  background-color: #20c7df;
   color: white;
+  border: 3px solid #d99b26;
+  box-shadow:
+    inset 0 0 0 2px white,
+    0 0 8px rgba(217, 155, 38, 0.5);
+
 }
 /* Sequencer button: in active and active beats */
 .step-button {
@@ -97,9 +104,20 @@ cursor: pointer;
   padding: 8px;
   cursor: pointer;
 }
+/* Active beats glow with solar gold */
 .step-button.active {
   background-color: var(--color-step-active);
-  border-color: var(--color-step-active);
+  border: 3px solid var(--color-solar-gold);
+  color: white;
+  box-shadow:
+  inset 0 0 0 2px var(--color-step-active),
+  inset 0 0 0 4px var(--color-solar-gold),
+  0 0 8px rgba(201, 149, 53, 0.5);
+}
+.step-button.playing {
+  background-color: var(--color-step-playing);
+  border-color: var(--color-step-playing);
+  color: #000;
 }
 /* Floating Galaxey sequencer panel styling. */
 .sequencer {
@@ -109,8 +127,11 @@ cursor: pointer;
   max-width: 900px;
   margin: 24px auto;
   overflow-x: auto;
-  box-shadow: 0 4px 32px rgba(167, 139, 250, 0.2);
-  border: 1px solid var(--color-step-active);
+  /* Solar gold outline and floating glow */
+border: 2px solid var(--color-solar-gold); 
+box-shadow:
+  0 0 12px rgba(201, 149, 53, 0.35),
+  0 8px 32px rgba(167, 139, 250, 0.2);
 }
 /* Align instruments names and beat steps */
 .sequencer-row {

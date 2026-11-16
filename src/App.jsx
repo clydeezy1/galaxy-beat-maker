@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css';
-import { searchSounds } from './services/freesound';
+import { searchSounds, getSoundById } from './services/freesound';
 
 
 const sound = [
@@ -13,9 +13,14 @@ const sound = [
 ];
 function App() {
   const [isPlaying, setIsPlaying] = useState(false);
+  // Tracks which sequencer is playing.
+  // Tracks the current beat position
+  const[currentStep, setCurrentStep] = useState(0);
   const [tempo, setTempo] = useState(120);
   const [volume, setVolume] = useState(75);
   const [selectedSound, setSelectedSound] = useState('');
+  // Stores the chosen Freesound sample for each instrument
+const [instrumentSounds, setInstrumentSounds] = useState({});
   // MIDI is too hard so i'll just use a sound sequencer instead.
   const [pattern, setPattern] = useState(()=>
     Object.fromEntries(
@@ -35,9 +40,46 @@ function App() {
     }));
   }
 
+  // Starts playback or stops and resets the sequencer
   function togglePlayback() {
-    setIsPlaying(previous => !previous);
+    if (isPlaying) {
+      setIsPlaying(false);
+      setCurrentStep(0);
+    } else {
+      setIsPlaying(true);
+      setCurrentStep(0);
+    }
   }
+
+  // Advances the sequencer based on BPM
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    const interval = setInterval(() => {
+      console.log("Timer tick:", performance.now());
+
+      setCurrentStep(previous => (previous + 1) % 16);
+
+      console.log(
+        "Step interval:",
+        (60 / tempo / 4) * 1000,
+        "ms"
+      );
+    }, (60 / tempo / 4) * 1000);
+
+    return () => clearInterval(interval);
+  }, [isPlaying, tempo]);
+
+  // Plays sounds when the sequencer reaches an active step
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    sound.forEach((instrument) => {
+      if (pattern[instrument.id]?.[currentStep]) {
+        playInstrument(instrument.id);
+      }
+    });
+  }, [currentStep, isPlaying]);
 
   async function handleSoundClick(sound) {
     setSelectedSound(sound.name);
@@ -57,6 +99,12 @@ function App() {
       if (!firstSound) {
         throw new Error('No matching sound found.');
       }
+ //Saves the slected Freesound sample to its instrument 
+        setInstrumentSounds(previous => ({
+          ...previous,
+          [sound.id]: firstSound.id
+        }));
+
       const audioUrl = firstSound.previews['preview-hq-mp3'];
       console.log('Audio URL:', audioUrl);
 
@@ -68,6 +116,35 @@ function App() {
       console.error('Could not load sounds:', error);
     }
   }
+
+async function playInstrument(soundId) {
+  console.log("All saved instrument sounds:", instrumentSounds);
+
+  const freesoundId = instrumentSounds[soundId];
+
+  console.log("Instrument:", soundId);
+  console.log("SavedFreesound ID:", freesoundId);
+
+
+  if (!freesoundId) return;
+
+  try {
+    const soundData = await getSoundById(freesoundId);
+
+    const audioUrl =
+      soundData.previews["preview-hq-mp3"];
+
+    const audio = new Audio(audioUrl);
+    audio.volume = volume / 100;
+
+    await audio.play();
+
+    console.log("Audio playback started:", soundId);
+    
+  } catch (error) {
+    console.error("Playback failed:", error);
+  }
+}
 
   return (
     <main>
@@ -139,8 +216,11 @@ function App() {
                 <button
                   key={stepIndex}
                   type="button"
-                  className={isOn ? 'step-button active' : 'step-button'}
-                  onClick={() => {
+                    className={`step-button
+                      ${isOn ? 'active' : ''}
+                      ${isPlaying && currentStep === stepIndex ? 'playing' : ''}
+                      `}                  
+                      onClick={() => {
                       console.log('Clicked:', item.id, stepIndex);
                       toggleStep(item.id, stepIndex);
                     }}

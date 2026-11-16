@@ -9,13 +9,13 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         '/api/freesound': {
-          target: 'https://freesound.org',
+          target: 'https://freesound.org/apiv2',
           changeOrigin: true,
           headers: {
             Authorization: `Token ${env.FREESOUND_API_KEY}`,
           },
-          rewrite: path =>
-            path.replace('/api/freesound', '/apiv2'),
+          rewrite: (path) =>
+            path.replace(/^\/api\/freesound/, ''),
         },
       },
     },
