@@ -10,6 +10,10 @@
   --font-family: 'Arial', sans-serif;
   --space-control:12px;
   --radius-control: 8px;
+  /* Galaxy sequencer colors */
+--color-step-inactive: #334155;
+--color-step-active: #a78bfa;
+--color-step-playing: #22d3ee;
 }
 
 * {

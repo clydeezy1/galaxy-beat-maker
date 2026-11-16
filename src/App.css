@@ -88,3 +88,47 @@ cursor: pointer;
   background-color: var(--color-playing);
   color: white;
 }
+/* Sequencer button: in active and active beats */
+.step-button {
+  background-color: var(--color-step-inactive);
+  color: white;
+  border: 1px solid var(--color-step-inactive);
+  border-radius: 6px;
+  padding: 8px;
+  cursor: pointer;
+}
+.step-button.active {
+  background-color: var(--color-step-active);
+  border-color: var(--color-step-active);
+}
+/* Floating Galaxey sequencer panel styling. */
+.sequencer {
+  background-color: var(--color-step-inactive);
+  padding: 16px;
+  border-radius: 16px;
+  max-width: 900px;
+  margin: 24px auto;
+  overflow-x: auto;
+  box-shadow: 0 4px 32px rgba(167, 139, 250, 0.2);
+  border: 1px solid var(--color-step-active);
+}
+/* Align instruments names and beat steps */
+.sequencer-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.sequencer-row span {
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.sequencer-steps {
+  display: grid;
+  grid-template-columns: repeat(16, minmax(28px, 1fr));
+  gap: 4px;
+  min-width: 508px; 
+  /* Ensure the grid doesn't shrink too much */
+}

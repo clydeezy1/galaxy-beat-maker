@@ -9,7 +9,7 @@ const sound = [
   {id: "hihat", name : "Hi-Hat"},
   {id: "clap", name : "Clap"},
   {id: "808", name : "808 Bass"},
-  {id: "pinano", name : "Piano"},
+  {id: "piano", name : "Piano"},
 ];
 function App() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -140,7 +140,11 @@ function App() {
                   key={stepIndex}
                   type="button"
                   className={isOn ? 'step-button active' : 'step-button'}
-                  onClick={() => toggleStep(item.id, stepIndex)}
+                  onClick={() => {
+                      console.log('Clicked:', item.id, stepIndex);
+                      toggleStep(item.id, stepIndex);
+                    }}
+
                   aria-pressed={isOn}
                   aria-label={`${item.name} step ${stepIndex + 1}`}
                 >
@@ -152,7 +156,6 @@ function App() {
         ))}
       </section>
     </main>
-  )
+  ); 
 }
-
 export default App;
