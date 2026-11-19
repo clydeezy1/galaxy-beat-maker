@@ -17,6 +17,7 @@ function App() {
   const audioBuffersRef = useRef({});
   const audioContextRef = useRef(null);
   const previewAudioRef = useRef(null);
+  const activeSourcesRef = useRef(new Set());
   const [previewingId, setPreviewingId] = useState(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
@@ -52,14 +53,20 @@ const [activeInstrument, setActiveInstrument] = useState(null);
 
   // Starts playback or stops and resets the sequencer
   function togglePlayback() {
-    if (isPlaying) {
-      setIsPlaying(false);
-      setCurrentStep(0);
-    } else {
-      setIsPlaying(true);
-      setCurrentStep(0);
-    }
+  if (isPlaying) {
+    setIsPlaying(false);
+    setCurrentStep(0);
+
+    activeSourcesRef.current.forEach(source => {
+      source.stop();
+    });
+
+    activeSourcesRef.current.clear();
+  } else {
+    setIsPlaying(true);
+    setCurrentStep(0);
   }
+}
 
   // Advances the sequencer based on BPM
   useEffect(() => {
@@ -260,7 +267,15 @@ function playInstrument(soundId) {
   source.connect(gainNode);
   gainNode.connect(audioContext.destination);
 
-  source.start(0);
+  activeSourcesRef.current.add(source);
+
+source.onended = () => {
+  activeSourcesRef.current.delete(source);
+  source.disconnect();
+  gainNode.disconnect();
+};
+
+source.start(0);
 }
   return (
     <main>
