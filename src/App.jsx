@@ -16,6 +16,8 @@ const sound = [
 function App() {
   const audioBuffersRef = useRef({});
   const audioContextRef = useRef(null);
+  const previewAudioRef = useRef(null);
+  const [previewingId, setPreviewingId] = useState(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
   // Tracks which sequencer is playing.
@@ -78,6 +80,13 @@ const [activeInstrument, setActiveInstrument] = useState(null);
     return () => clearInterval(interval);
   }, [isPlaying, tempo]);
 
+useEffect(() => {
+  return () => {
+    previewAudioRef.current?.pause();
+    previewAudioRef.current = null;
+  };
+}, []);
+
   // Plays sounds when the sequencer reaches an active step
   useEffect(() => {
     if (!isPlaying) return;
@@ -89,6 +98,53 @@ const [activeInstrument, setActiveInstrument] = useState(null);
     });
   }, [currentStep, isPlaying]);
 
+function stopPreview() {
+  const preview = previewAudioRef.current;
+
+  if (preview) {
+    preview.pause();
+    preview.currentTime = 0;
+    previewAudioRef.current = null;
+  }
+
+  setPreviewingId(null);
+}
+
+function togglePreview(sample) {
+  const previewUrl = sample.previews?.["preview-hq-mp3"];
+  if (!previewUrl) return;
+
+  const isSamePreview =
+    previewAudioRef.current?.src === previewUrl;
+
+  stopPreview();
+
+  if (isSamePreview) return;
+
+  const preview = new Audio(previewUrl);
+  preview.volume = volume / 100;
+
+  previewAudioRef.current = preview;
+  setPreviewingId(sample.id);
+
+  const clearPreview = () => {
+    if (previewAudioRef.current === preview) {
+      previewAudioRef.current = null;
+      setPreviewingId(null);
+    }
+  };
+
+  preview.onended = clearPreview;
+  preview.onerror = clearPreview;
+
+  preview.play().catch((error) => {
+    if (previewAudioRef.current === preview) {
+      console.error("Could not play preview:", error);
+      clearPreview();
+    }
+  });
+}
+  
   async function handleSoundClick(sound) {
     setSelectedSound(sound.name);
     setActiveInstrument(sound.id);
@@ -148,6 +204,8 @@ async function loadSelectedInstrument(soundId, sample) {
 
 function selectSound(sample) {
   if (!activeInstrument) return;
+
+  stopPreview();
 
   setInstrumentSounds(previous => ({
     ...previous,
@@ -298,22 +356,13 @@ function playInstrument(soundId) {
       <div key={sample.id} className="sound-result">
         <span>{sample.name}</span>
 
-        <button
-          type="button"
-          onClick={() => {
-            const previewUrl =
-              sample.previews?.["preview-hq-mp3"];
-
-            if (!previewUrl) return;
-
-            const preview = new Audio(previewUrl);
-            preview.volume = volume / 100;
-            preview.play().catch(console.error);
-          }}
-        >
-          Preview
-        </button>
-
+<button
+  type="button"
+  onClick={() => togglePreview(sample)}
+  aria-pressed={previewingId === sample.id}
+>
+  {previewingId === sample.id ? "Stop Preview" : "Preview"}
+</button>
         <button
           type="button"
           onClick={() => selectSound(sample)}
@@ -330,7 +379,15 @@ function playInstrument(soundId) {
 
         {sound.map(item => (
           <div className="sequencer-row" key={item.id}>
-            <span>{item.name}</span>
+          <span
+          className={
+            pattern[item.id]?.some(isOn => isOn)
+              ? "instrument-name in-use"
+              : "instrument-name"
+          }
+        >
+          {item.name}
+          </span>
 
             <div className="sequencer-steps">
               {pattern[item.id]?.map((isOn, stepIndex) => (

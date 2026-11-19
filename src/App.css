@@ -183,3 +183,13 @@ button:active {
 input[type="range"] {
   accent-color: #b6a0ff;
 }
+
+.instrument-name {
+  color: white;
+  transition: color 0.2s ease;
+}
+
+.instrument-name.in-use {
+  color: #c4b5fd;
+  font-weight: 700;
+}
