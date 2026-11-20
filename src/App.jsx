@@ -26,6 +26,9 @@ function App() {
   const[currentStep, setCurrentStep] = useState(0);
   const [tempo, setTempo] = useState(120);
   const [volume, setVolume] = useState(75);
+  const [stepCount, setStepCount] = useState(16);
+  const [instruments, setInstruments] = useState(sound);
+const [newInstrumentName, setNewInstrumentName] = useState("");
   const [selectedSound, setSelectedSound] = useState('');
   // Stores the chosen Freesound sample for each instrument
 const [instrumentSounds, setInstrumentSounds] = useState({});
@@ -51,6 +54,82 @@ const [activeInstrument, setActiveInstrument] = useState(null);
     }));
   }
 
+  function changeStepCount(newCount) {
+  setPattern(previous => {
+    const updated = {};
+
+    Object.keys(previous).forEach(soundId => {
+      const oldSteps = previous[soundId];
+
+      updated[soundId] = Array.from(
+        { length: newCount },
+        (_, index) => oldSteps[index] ?? false
+      );
+    });
+
+    return updated;
+  });
+
+  setStepCount(newCount);
+  setCurrentStep(0);
+}
+
+function addInstrument() {
+  const name = newInstrumentName.trim();
+
+  if (!name) return;
+
+  const id = `custom-${Date.now()}`;
+
+  const newInstrument = {
+    id: id,
+    name: name
+  };
+
+  setInstruments(previous => [
+    ...previous,
+    newInstrument
+  ]);
+
+  setPattern(previous => ({
+    ...previous,
+    [id]: Array(stepCount).fill(false)
+  }));
+
+  setNewInstrumentName("");
+}
+function removeInstrument(soundId) {
+  // Remove the instrument from the list
+  setInstruments(previous =>
+    previous.filter(item => item.id !== soundId)
+  );
+
+  // Remove its sequencer pattern
+  setPattern(previous => {
+    const updated = { ...previous };
+    delete updated[soundId];
+    return updated;
+  });
+
+  // Remove its loaded audio
+  delete audioBuffersRef.current[soundId];
+
+  // Remove its selected Freesound sample
+  setInstrumentSounds(previous => {
+    const updated = { ...previous };
+    delete updated[soundId];
+    return updated;
+  });
+
+  // Clear the selection if this instrument was selected
+  if (activeInstrument === soundId) {
+    stopPreview();
+    setActiveInstrument(null);
+    setSelectedSound("");
+    setSearchResults([]);
+  }
+}
+
   // Starts playback or stops and resets the sequencer
   function togglePlayback() {
   if (isPlaying) {
@@ -75,7 +154,7 @@ const [activeInstrument, setActiveInstrument] = useState(null);
     const interval = setInterval(() => {
       console.log("Timer tick:", performance.now());
 
-      setCurrentStep(previous => (previous + 1) % 16);
+      setCurrentStep(previous => (previous + 1) % stepCount);
 
       console.log(
         "Step interval:",
@@ -85,7 +164,7 @@ const [activeInstrument, setActiveInstrument] = useState(null);
     }, (60 / tempo / 4) * 1000);
 
     return () => clearInterval(interval);
-  }, [isPlaying, tempo]);
+  }, [isPlaying, tempo, stepCount]);
 
 useEffect(() => {
   return () => {
@@ -98,12 +177,12 @@ useEffect(() => {
   useEffect(() => {
     if (!isPlaying) return;
 
-    sound.forEach((instrument) => {
+    instruments.forEach((instrument) => {
       if (pattern[instrument.id]?.[currentStep]) {
         playInstrument(instrument.id);
       }
     });
-  }, [currentStep, isPlaying]);
+  }, [currentStep, isPlaying, instruments]);
 
 function stopPreview() {
   const preview = previewAudioRef.current;
@@ -230,7 +309,7 @@ function selectSound(sample) {
 async function changeSearchPage(newPage) {
   if (newPage < 1 || !activeInstrument) return;
 
-  const instrument = sound.find(
+  const instrument = instruments.find(
     (item) => item.id === activeInstrument
   );
 
@@ -319,7 +398,7 @@ source.start(0);
       </p>
       <p>Selected sound: {selectedSound || 'None yet'}</p>
       <div className="sound-buttons">
-        {sound.map((sound) => (
+        {instruments.map((sound) => (
           <button 
           key={sound.id} 
           type="button" 
@@ -391,8 +470,49 @@ source.start(0);
 
       < section className="sequencer">
         <h2>Beat Pattern</h2>
+        <div className="step-count-control">
+  <label htmlFor="step-count">
+    Pattern Length:
+  </label>
 
-        {sound.map(item => (
+  <select
+    id="step-count"
+    value={stepCount}
+    onChange={event =>
+      changeStepCount(Number(event.target.value))
+    }
+  >
+    <option value={8}>8 Steps</option>
+    <option value={16}>16 Steps</option>
+    <option value={32}>32 Steps</option>
+    <option value={64}>64 Steps</option>
+  </select>
+</div>
+
+  <div className="add-instrument-control">
+  <label htmlFor="new-instrument">
+    Add Instrument
+  </label>
+
+  <input
+    id="new-instrument"
+    type="text"
+    placeholder="Example: Synth, Tom, Crash"
+    value={newInstrumentName}
+    onChange={event =>
+      setNewInstrumentName(event.target.value)
+    }
+  />
+
+  <button
+    type="button"
+    onClick={addInstrument}
+  >
+    + Add Instrument
+  </button>
+</div>
+  
+        {instruments.map(item => (
           <div className="sequencer-row" key={item.id}>
           <span
           className={
@@ -403,6 +523,16 @@ source.start(0);
         >
           {item.name}
           </span>
+          {item.id.startsWith("custom-") && (
+  <button
+    type="button"
+    className="remove-instrument-button"
+    onClick={() => removeInstrument(item.id)}
+    aria-label={`Remove ${item.name}`}
+  >
+    ×
+  </button>
+)}
 
             <div className="sequencer-steps">
               {pattern[item.id]?.map((isOn, stepIndex) => (
