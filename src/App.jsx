@@ -5,6 +5,7 @@ import { loadSoundWithCache } from "./services/soundCache";
 
 
 
+
 const sound = [
   {id: "kick", name : "Kick"},
   {id: "snare", name : "Snare"},
@@ -19,6 +20,7 @@ function App() {
   const previewAudioRef = useRef(null);
   const activeSourcesRef = useRef(new Set());
   const [previewingId, setPreviewingId] = useState(null);
+  const [instrumentVolumes, setInstrumentVolumes] = useState({});
 
   const [isPlaying, setIsPlaying] = useState(false);
   // Tracks which sequencer is playing.
@@ -341,7 +343,10 @@ function playInstrument(soundId) {
   source.buffer = audioBuffer;
 
   const gainNode = audioContext.createGain();
-  gainNode.gain.value = volume / 100;
+  const instrumentVolume = instrumentVolumes[soundId] ?? 100;
+
+  gainNode.gain.value =
+    (volume / 100) * (instrumentVolume / 100);
 
   source.connect(gainNode);
   gainNode.connect(audioContext.destination);
@@ -358,32 +363,42 @@ source.start(0);
 }
   return (
     <main>
-      <h1>Galaxy Beat Maker</h1>
-      <p>Create your own beats among the stars.</p>
-      <div className="tempo-control">
-        <label htmlFor="tempo">Tempo: {tempo} BPM</label>
-        <input
-          id="tempo"
-          type="range"
-          min="40"
-          max="240"
-          step="1"
-          value={tempo}
-          onChange={event => setTempo(Number(event.target.value))}
-        />
-      </div>
-      <div className="volume-control">
-        <label htmlFor="volume">Master Volume: {volume}%</label>
-        <input
-          id="volume"
-          type="range"
-          min="0"
-          max="100"
-          step="1"
-          value={volume}
-          onChange={event => setVolume(Number(event.target.value))}
-        />
-      </div>
+      <header className="galaxy-banner">
+        <div className="galaxy-banner-text">
+          <h1>Galaxy Beat Maker</h1>
+          <p>Create your own beats among the stars.</p>
+          <img
+            className="galaxy-banner-image"
+            src={`${import.meta.env.BASE_URL}images/whirlpool.jpg`}
+            alt="Whirlpool Galaxy photographed by Hubble"
+            />
+        </div>
+      </header>
+
+        <div className="tempo-control">
+          <label htmlFor="tempo">Tempo: {tempo} BPM</label>
+          <input
+            id="tempo"
+            type="range"
+            min="40"
+            max="240"
+            step="1"
+            value={tempo}
+            onChange={event => setTempo(Number(event.target.value))}
+          />
+        </div>
+        <div className="volume-control">
+          <label htmlFor="volume">Master Volume: {volume}%</label>
+          <input
+            id="volume"
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            value={volume}
+            onChange={event => setVolume(Number(event.target.value))}
+          />
+        </div>
 
       <button
       type="button"
@@ -522,7 +537,30 @@ source.start(0);
           }
         >
           {item.name}
+
           </span>
+
+  <label className="instrument-volume">
+    Volume: {instrumentVolumes[item.id] ?? 100}%
+
+    <input
+      type="range"
+      min="0"
+      max="100"
+      step="1"
+      value={instrumentVolumes[item.id] ?? 100}
+      onChange={event => {
+        const newVolume = Number(event.target.value);
+
+        setInstrumentVolumes(previous => ({
+          ...previous,
+          [item.id]: newVolume
+        }));
+      }}
+      aria-label={`${item.name} volume`}
+    />
+  </label>
+
           {item.id.startsWith("custom-") && (
   <button
     type="button"
@@ -530,7 +568,7 @@ source.start(0);
     onClick={() => removeInstrument(item.id)}
     aria-label={`Remove ${item.name}`}
   >
-    ×
+    x
   </button>
 )}
 

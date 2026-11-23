@@ -126,7 +126,7 @@ cursor: pointer;
   border-radius: 16px;
   max-width: 900px;
   margin: 24px auto;
-  overflow-x: auto;
+  overflow-x: hidden;
   /* Solar gold outline and floating glow */
 border: 2px solid var(--color-solar-gold); 
 box-shadow:
@@ -148,9 +148,9 @@ box-shadow:
 
 .sequencer-steps {
   display: grid;
-  grid-template-columns: repeat(16, minmax(28px, 1fr));
+  grid-template-columns: repeat(16, minmax(0, 1fr));
   gap: 4px;
-  min-width: 508px; 
+  min-width: 0; 
   /* Ensure the grid doesn't shrink too much */
 }
 /* Quick presentation polish */
@@ -192,4 +192,296 @@ input[type="range"] {
 .instrument-name.in-use {
   color: #c4b5fd;
   font-weight: 700;
+}
+
+.remove-instrument-button {
+  background-color: transparent;
+  color: #c4b5fd;
+  border: 1px solid #c4b5fd;
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.remove-instrument-button:hover {
+  background-color: #c4b5fd;
+  color: #1e293b;
+}
+
+.remove-instrument-button:focus-visible {
+  outline: 2px solid #c4b5fd;
+  outline-offset: 3px;
+}
+/* ======================================
+   GALAXY BEAT MAKER - SEQUENCER
+====================================== */
+
+.sequencer {
+  background: #141824;
+  border: 1px solid #343c51;
+  border-radius: 18px;
+  padding: 24px;
+  margin-top: 24px;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+}
+
+.sequencer h2 {
+  color: #f8fafc;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 24px;
+}
+
+/* Pattern length */
+
+.step-count-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.step-count-control label {
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+.step-count-control select {
+  background: #30374b;
+  color: #e9d5ff;
+  border: 1px solid #48536b;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+/* Add instruments */
+
+.add-instrument-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.add-instrument-control label {
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+.add-instrument-control input {
+  flex: 1;
+  min-width: 130px;
+  background: #252d40;
+  color: #f8fafc;
+  border: 1px solid #48536b;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.add-instrument-control button {
+  background: #8b5cf6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.add-instrument-control button:hover {
+  background: #a78bfa;
+}
+
+/* Instrument rows */
+
+.sequencer-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  min-width: 0;
+}
+
+.instrument-name {
+  color: #e2e8f0;
+  font-size: 13px;
+  font-weight: 500;
+  flex: 0 0 85px;
+  min-width: 0;
+}
+
+.instrument-name.in-use {
+  color: #c4b5fd;
+  font-weight: 700;
+}
+
+/* Sequencer grid */
+
+.sequencer-steps {
+  display: grid;
+  grid-template-columns: repeat(16, minmax(0, 1fr));
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: visible;
+  padding: 4px 0;
+}
+
+/* Individual step buttons */
+
+.step-button {
+  appearance: none;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid #3c465e;
+  border-radius: 5px;
+  background: #273044;
+  color: #94a3b8;
+  font-size: 10px;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.step-button:nth-child(4n + 1) {
+  background: #343c51;
+}
+
+/* Activated step */
+
+.step-button.active {
+  background: #a78bfa;
+  border-color: #c4b5fd;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* Current playback position */
+
+.step-button.playing {
+  border-color: #f8fafc;
+  box-shadow: 0 0 0 2px rgba(196, 181, 253, 0.65);
+}
+
+/* Active step during playback */
+
+.step-button.active.playing {
+  background: #8b5cf6;
+  box-shadow: 0 0 10px rgba(167, 139, 250, 0.75);
+}
+
+.step-button:hover {
+  border-color: #c4b5fd;
+}
+
+.step-button:focus-visible {
+  outline: 2px solid #e9d5ff;
+  outline-offset: 2px;
+}
+
+/* Remove custom instrument */
+
+.remove-instrument-button {
+  background: transparent;
+  color: #c4b5fd;
+  border: 1px solid #6d5a91;
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.remove-instrument-button:hover {
+  background: #a78bfa;
+  color: #141824;
+}
+
+/* Smaller screens */
+
+@media (max-width: 600px) {
+  .sequencer {
+    padding: 14px;
+  }
+
+  .sequencer-row {
+    gap: 6px;
+  }
+
+  .instrument-name {
+    flex-basis: 70px;
+    font-size: 12px;
+  }
+
+  .step-button {
+    flex-basis: 28px;
+    width: 28px;
+    height: 28px;
+  }
+}
+
+.galaxy-banner {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  min-height: 240px;
+  padding: 32px;
+  margin-bottom: 24px;
+  border-radius: 16px;
+  background: #201b36;
+}
+
+.galaxy-banner-image {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 65%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: -2;
+}
+
+.galaxy-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient( 
+    to right,
+    #201b36 25%,
+    rgba(32, 27,54,0.85) 45%,
+    rgba(32, 27,54,0.1) 100%
+  );
+  z-index: -1;
+}
+
+.galaxy-banner-text {
+  max-width: 65%;
+}
+
+@media (max-width: 600px) {
+  .galaxy-banner{
+    min-height: 200px;
+    padding: 24px;
+  }
+
+  .galaxy-banner-text {
+    max-width: 100%;
+  }
+
+  .galaxy-banner-image {
+    width: 100%;
+    opacity: 0.55;
+  }
 }
